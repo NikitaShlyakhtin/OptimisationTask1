@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -11,9 +13,13 @@ public class Main {
          * 4x1 + x2 + 2x3 <= 6
          */
 
-        double[] c = { 1, 2, 3 }; // A vector of coefficients of objective function
-        double[][] a = { { 1, 1, 1 }, { 2, 2, 1 }, { 4, 1, 2 } }; // A matrix of coefficients of constraints
-        double[] b = { 3, 5, 6 }; // A vector of right-hand sides of constraints
+        List<Double> c = new ArrayList<>(Arrays.asList(1.0, 2.0, 3.0)); // A vector of coefficients of objective function
+        List<List<Double>> a = new ArrayList<>(Arrays.asList(
+                Arrays.asList(1.0, 1.0, 1.0),
+                Arrays.asList(2.0, 2.0, 1.0),
+                Arrays.asList(4.0, 1.0, 2.0)
+        )); // A matrix of coefficients of constraints
+        List<Double> b = new ArrayList<>(Arrays.asList(3.0, 5.0, 6.0)); // A vector of right-hand sides of constraints
         double eps = 1e-6; // The approximation accuracy
 
         try {
@@ -45,23 +51,23 @@ class SimplexResult {
 }
 
 class SimplexMethod {
-    public static SimplexResult solve(double[] c, double[][] a, double[] b, double eps) {
-        int n = c.length;
-        int m = b.length;
+    public static SimplexResult solve(List<Double> c, List<List<Double>> a, List<Double> b, double eps) {
+        int n = c.size();
+        int m = b.size();
         double[][] d = new double[m + 1][n + m + 1];
         int[] basis = new int[m];
 
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                d[i][j] = a[i][j];
+                d[i][j] = a.get(i).get(j);
             }
             d[i][n + i] = 1;
             basis[i] = n + i;
-            d[i][n + m] = b[i];
+            d[i][n + m] = b.get(i);
         }
 
         for (int j = 0; j < n; j++) {
-            d[m][j] = -c[j];
+            d[m][j] = -c.get(j);
         }
 
         while (true) {
@@ -109,7 +115,7 @@ class SimplexMethod {
 
         double obj = 0;
         for (int j = 0; j < n; j++) {
-            obj += c[j] * x[j];
+            obj += c.get(j) * x[j];
         }
 
         if (obj < -eps) {
