@@ -6,7 +6,7 @@ public class Main {
     public static void main(String[] args) {
         /*
          * This will solve the following linear programming problem:
-         * 
+         *
          * maximize x1 + 2x2 + 3x3
          * subject to x1 + x2 + x3 <= 3
          * 2x1 + 2x2 + x3 <= 5
@@ -24,7 +24,19 @@ public class Main {
 
         try {
             SimplexResult result = SimplexMethod.solve(c, a, b, eps);
-            System.out.println("x* = " + Arrays.toString(result.getX()));
+
+            System.out.print("x* = [");
+            List<Double> xValues = result.getX();
+            int lastIndex = xValues.size() - 1;
+            for (int i = 0; i < xValues.size(); i++) {
+                System.out.print(xValues.get(i));
+                if (i != lastIndex) {
+                    System.out.print(", ");
+                }
+            }
+            System.out.println("]");
+
+
             System.out.println("obj = " + result.getObj());
         } catch (ArithmeticException e) {
             System.out.println(e.getMessage());
@@ -34,9 +46,9 @@ public class Main {
 
 class SimplexResult {
     private final double obj;
-    private final double[] x;
+    private final List<Double> x;
 
-    public SimplexResult(double obj, double[] x) {
+    public SimplexResult(double obj, List<Double> x) {
         this.obj = obj;
         this.x = x;
     }
@@ -45,7 +57,7 @@ class SimplexResult {
         return obj;
     }
 
-    public double[] getX() {
+    public List<Double> getX() {
         return x;
     }
 }
@@ -54,36 +66,44 @@ class SimplexMethod {
     public static SimplexResult solve(List<Double> c, List<List<Double>> a, List<Double> b, double eps) {
         int n = c.size();
         int m = b.size();
-        double[][] d = new double[m + 1][n + m + 1];
-        int[] basis = new int[m];
 
+        List<List<Double>> d = new ArrayList<>();
+        for (int i = 0; i < m + 1; i++) {
+            List<Double> row = new ArrayList<>();
+            for (int j = 0; j < n + m + 1; j++) {
+                row.add(0.0);
+            }
+            d.add(row);
+        }
+
+        List<Integer> basis = new ArrayList<>();
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                d[i][j] = a.get(i).get(j);
+                d.get(i).set(j, a.get(i).get(j));
             }
-            d[i][n + i] = 1;
-            basis[i] = n + i;
-            d[i][n + m] = b.get(i);
+            d.get(i).set(n + i, 1.0);
+            basis.add(n + i);
+            d.get(i).set(n + m, b.get(i));
         }
 
         for (int j = 0; j < n; j++) {
-            d[m][j] = -c.get(j);
+            d.get(m).set(j, -c.get(j));
         }
 
         while (true) {
             int k = 0;
             for (int j = 1; j < n + m; j++) {
-                if (d[m][j] < d[m][k]) {
+                if (d.get(m).get(j) < d.get(m).get(k)) {
                     k = j;
                 }
             }
-            if (d[m][k] >= -eps) {
+            if (d.get(m).get(k) >= -eps) {
                 break;
             }
 
             int l = -1;
             for (int i = 0; i < m; i++) {
-                if (d[i][k] > eps && (l == -1 || d[i][n + m] / d[i][k] < d[l][n + m] / d[l][k])) {
+                if (d.get(i).get(k) > eps && (l == -1 || d.get(i).get(n + m) / d.get(i).get(k) < d.get(l).get(n + m) / d.get(l).get(k))) {
                     l = i;
                 }
             }
@@ -91,31 +111,34 @@ class SimplexMethod {
                 throw new ArithmeticException("Unbounded");
             }
 
-            double t = d[l][k];
+            double t = d.get(l).get(k);
             for (int j = 0; j <= n + m; j++) {
-                d[l][j] /= t;
+                d.get(l).set(j, d.get(l).get(j) / t);
             }
             for (int i = 0; i <= m; i++) {
                 if (i != l) {
-                    t = d[i][k];
+                    t = d.get(i).get(k);
                     for (int j = 0; j <= n + m; j++) {
-                        d[i][j] -= d[l][j] * t;
+                        d.get(i).set(j, d.get(i).get(j) - d.get(l).get(j) * t);
                     }
                 }
             }
-            basis[l] = k;
+            basis.set(l, k);
         }
 
-        double[] x = new double[n];
+        List<Double> x = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            x.add(0.0);
+        }
         for (int i = 0; i < m; i++) {
-            if (basis[i] < n) {
-                x[basis[i]] = d[i][n + m];
+            if (basis.get(i) < n) {
+                x.set(basis.get(i), d.get(i).get(n + m));
             }
         }
 
         double obj = 0;
         for (int j = 0; j < n; j++) {
-            obj += c.get(j) * x[j];
+            obj += c.get(j) * x.get(j);
         }
 
         if (obj < -eps) {
