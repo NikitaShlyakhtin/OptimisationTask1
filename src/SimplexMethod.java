@@ -8,7 +8,7 @@ public class SimplexMethod {
     private static List<Integer> basis;
     private static double eps;
 
-    private static void init(List<Double> c, List<List<Double>> a, List<Double> b, double eps) {
+    private static void initializeFor(List<Double> c, List<List<Double>> a, List<Double> b, double eps) {
         SimplexMethod.n = c.size();
         SimplexMethod.m = b.size();
         SimplexMethod.eps = eps;
@@ -36,14 +36,14 @@ public class SimplexMethod {
         }
     }
 
-    private static int findIteratingIndex() {
-        int iteratingIndex = 0;
+    private static int findIndexOfIteration() {
+        int indexOfIteration = 0;
         for (int j = 1; j < n + m; j++) {
-            if (d.get(m).get(j) < d.get(m).get(iteratingIndex)) {
-                iteratingIndex = j;
+            if (d.get(m).get(j) < d.get(m).get(indexOfIteration)) {
+                indexOfIteration = j;
             }
         }
-        return iteratingIndex;
+        return indexOfIteration;
     }
 
     private static int findLeavingIndex(int iteratingIndex) {
@@ -55,12 +55,12 @@ public class SimplexMethod {
             }
         }
         if (leavingIndex == -1) {
-            throw new ArithmeticException("Unbounded");
+            throw new ArithmeticException("Result is unbounded");
         }
         return leavingIndex;
     }
 
-    private static void pivoting(int iteratingIndex, int leavingIndex) {
+    private static void doPivot(int iteratingIndex, int leavingIndex) {
         double t = d.get(leavingIndex).get(iteratingIndex);
         for (int j = 0; j <= n + m; j++) {
             d.get(leavingIndex).set(j, d.get(leavingIndex).get(j) / t);
@@ -76,27 +76,27 @@ public class SimplexMethod {
         basis.set(leavingIndex, iteratingIndex);
     }
 
-    private static void iteration() {
+    private static void iterate() {
         while (true) {
-            int iteratingIndex = findIteratingIndex();
+            int iteratingIndex = findIndexOfIteration();
             if (d.get(m).get(iteratingIndex) >= -eps) {
                 break;
             }
-            pivoting(iteratingIndex, findLeavingIndex(iteratingIndex));
+            doPivot(iteratingIndex, findLeavingIndex(iteratingIndex));
         }
     }
 
-    private static List<Double> getSolution() {
-        List<Double> x = new ArrayList<>();
+    private static List<Double> deriveSolution() {
+        List<Double> derivedSolution = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            x.add(0.0);
+            derivedSolution.add(0.0);
         }
         for (int i = 0; i < m; i++) {
             if (basis.get(i) < n) {
-                x.set(basis.get(i), d.get(i).get(n + m));
+                derivedSolution.set(basis.get(i), d.get(i).get(n + m));
             }
         }
-        return x;
+        return derivedSolution;
     }
 
     private static Double calcObjectiveValue(List<Double> c, List<Double> x) {
@@ -105,15 +105,15 @@ public class SimplexMethod {
             obj += c.get(j) * x.get(j);
         }
         if (obj < -eps) {
-            throw new ArithmeticException("The method is not applicable!");
+            throw new ArithmeticException("Method cannot be used on provided inputs!");
         }
         return obj;
     }
 
     public static SimplexResult solve(List<Double> c, List<List<Double>> a, List<Double> b, double eps) {
-        init(c, a, b, eps);
-        iteration();
-        List<Double> x = getSolution();
+        initializeFor(c, a, b, eps);
+        iterate();
+        List<Double> x = deriveSolution();
         double obj = calcObjectiveValue(c, x);
         return new SimplexResult(obj, x);
     }
