@@ -1,13 +1,17 @@
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Simplex method.
+ */
 public class SimplexMethod {
-    private static int n;
-    private static int m;
-    private static List<List<Double>> d;
-    private static List<Integer> basis;
-    private static double eps;
+    private static int n; // number of variables
+    private static int m; // number of equation
+    private static List<List<Double>> d; // matrix of coefficients of constraints
+    private static List<Integer> basis; // basic variables
+    private static double eps; // the approximation accuracy
 
+    // Initialisation of SimplexMethod instance with given values
     private static void initializeFor(List<Double> c, List<List<Double>> a, List<Double> b, double eps) {
         SimplexMethod.n = c.size();
         SimplexMethod.m = b.size();
@@ -36,6 +40,7 @@ public class SimplexMethod {
         }
     }
 
+    // Find entering variable for current iteration
     private static int findIndexOfIteration() {
         int indexOfIteration = 0;
         for (int j = 1; j < n + m; j++) {
@@ -46,6 +51,7 @@ public class SimplexMethod {
         return indexOfIteration;
     }
 
+    // Find leaving variable for current iteration
     private static int findLeavingIndex(int iteratingIndex) {
         int leavingIndex = -1;
         for (int i = 0; i < m; i++) {
@@ -60,6 +66,7 @@ public class SimplexMethod {
         return leavingIndex;
     }
 
+    // Do pivot with leaving and entering variables
     private static void doPivot(int iteratingIndex, int leavingIndex) {
         double t = d.get(leavingIndex).get(iteratingIndex);
         for (int j = 0; j <= n + m; j++) {
@@ -76,6 +83,7 @@ public class SimplexMethod {
         basis.set(leavingIndex, iteratingIndex);
     }
 
+    // Do one iteration with swapping leaving and entering variables
     private static void iterate() {
         while (true) {
             int iteratingIndex = findIndexOfIteration();
@@ -86,6 +94,7 @@ public class SimplexMethod {
         }
     }
 
+    // Derive the solution for x column
     private static List<Double> deriveSolution() {
         List<Double> derivedSolution = new ArrayList<>();
         for (int i = 0; i < n; i++) {
@@ -99,6 +108,7 @@ public class SimplexMethod {
         return derivedSolution;
     }
 
+    // Function that calculates the value of objective function, by multiplying x and c columns
     private static Double calcObjectiveValue(List<Double> c, List<Double> x) {
         double obj = 0;
         for (int j = 0; j < n; j++) {
@@ -110,11 +120,20 @@ public class SimplexMethod {
         return obj;
     }
 
+    /**
+     * Solution of simplex method.
+     *
+     * @param c   the vector of coefficients of objective function
+     * @param a   the matrix of coefficients of constraints
+     * @param b   the right side of constraints
+     * @param eps the approximation accuracy
+     * @return the simplex result
+     */
     public static SimplexResult solve(List<Double> c, List<List<Double>> a, List<Double> b, double eps) {
-        initializeFor(c, a, b, eps);
-        iterate();
-        List<Double> x = deriveSolution();
-        double obj = calcObjectiveValue(c, x);
-        return new SimplexResult(obj, x);
+        initializeFor(c, a, b, eps); // initialisation
+        iterate(); // proceed with solution
+        List<Double> x = deriveSolution(); // derivation of solution
+        double obj = calcObjectiveValue(c, x); // derivation of objective function
+        return new SimplexResult(obj, x); // print the result
     }
 }

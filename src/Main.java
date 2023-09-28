@@ -2,7 +2,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * The type Main.
+ */
 public class Main {
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         /*
          * This will solve the following linear programming problem:
@@ -22,6 +30,8 @@ public class Main {
         List<Double> b = new ArrayList<>(Arrays.asList(3.0, 5.0, 6.0)); // A vector of right-hand sides of constraints
         double eps = 1e-6; // The approximation accuracy
 
+        // Start the algorithm and print the result in case of success,
+        // catch errors if appear
         try {
             SimplexResult result = SimplexMethod.solve(c, a, b, eps);
             System.out.println("x* = " + result.getX());
