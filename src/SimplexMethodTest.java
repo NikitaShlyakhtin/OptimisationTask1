@@ -62,7 +62,7 @@ public class SimplexMethodTest {
         List<Double> b = Arrays.asList(5.0, 3.0, 5.0);
         double eps = 1e-6;
         Exception ex = Assert.assertThrows(ArithmeticException.class, () -> SimplexMethod.solve(c, a, b, eps));
-        Assert.assertEquals("Unbounded", ex.getMessage()); // comparing expected and received results
+        Assert.assertEquals("Result is unbounded", ex.getMessage()); // comparing expected and received results
     }
 
 }
